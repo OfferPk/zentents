@@ -1,0 +1,9 @@
+{
+  "appId": "pk.offer.zentents",
+  "appName": "ZenTents",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "backgroundColor": "#0c150e"
+  }
+}
