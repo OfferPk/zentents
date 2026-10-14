@@ -17,8 +17,11 @@
     <!-- Header -->
     <header>
       <div class="brand">
-        <span class="brand-icon">⛺</span>
-        <h1 class="brand-title">ZenTents</h1>
+        <span class="brand-icon" aria-hidden="true">⛺</span>
+        <div class="brand-copy">
+          <h1 class="brand-title">ZenTents</h1>
+          <span class="brand-tagline">A quieter kind of puzzle</span>
+        </div>
       </div>
       <div class="header-controls">
         <button id="btn-sound" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
@@ -36,6 +39,13 @@
         <button id="btn-prev-level" class="nav-btn" title="Previous Level" aria-label="Previous Level">◀</button>
         <button id="btn-next-level" class="nav-btn" title="Next Level" aria-label="Next Level">▶</button>
       </div>
+      <div class="level-progress">
+        <span class="progress-caption">WOODLAND JOURNEY</span>
+        <span id="progress-count" class="progress-count">0 / 50 cleared</span>
+        <div id="progress-track" class="progress-track" role="progressbar" aria-label="Completed woodland puzzles" aria-valuemin="0" aria-valuemax="50" aria-valuenow="0">
+          <span id="progress-fill" class="progress-fill"></span>
+        </div>
+      </div>
     </div>
 
     <!-- Hint Banner -->
@@ -44,12 +54,19 @@
       <button id="btn-close-hint" class="hint-close" title="Close" aria-label="Close">✕</button>
     </div>
 
+    <div class="rule-note" aria-label="Puzzle rule: place one tent beside each tree, and keep tents from touching">
+      <span class="rule-note-mark" aria-hidden="true">✳</span>
+      <span>One tent beside each tree. Keep the tents apart.</span>
+      <span class="rule-note-tag">TAKE YOUR TIME</span>
+    </div>
+    <p id="cell-instructions" class="sr-only">Use the arrow keys to move between open cells. Press Enter or Space to cycle a cell through empty, grass, tent, and empty. Trees are fixed.</p>
+
     <!-- Board Container -->
-    <main class="board-container" id="board-container">
-      <div class="corner-spacer">🌲</div>
+    <main class="board-container" id="board-container" aria-label="Puzzle board with row and column tent quotas" aria-describedby="cell-instructions">
+      <div class="corner-spacer" aria-hidden="true">✦</div>
       <div id="col-quotas" class="col-quotas"></div>
       <div id="row-quotas" class="row-quotas"></div>
-      <div id="grid-board" class="grid-board"></div>
+      <div id="grid-board" class="grid-board" role="group" aria-label="Puzzle cells"></div>
     </main>
 
     <!-- Action Controls -->
@@ -66,7 +83,7 @@
         <span>💡</span>
         <span>Hint</span>
       </button>
-      <button id="btn-autograss" class="action-btn active" title="Toggle Auto-Grass">
+      <button id="btn-autograss" class="action-btn active" title="Toggle Auto-Grass" aria-pressed="true">
         <span>☘</span>
         <span>Auto-Grass</span>
       </button>
@@ -75,8 +92,8 @@
 
   <!-- Footer -->
   <footer>
-    <span>100% Offline • No Ads</span>
-    <span>ZenTents v1.0.0</span>
+    <span><span class="footer-dot" aria-hidden="true"></span> Plays offline · No ads</span>
+    <span>Find your clearing</span>
   </footer>
 
   <!-- Level Selection Modal -->
@@ -84,7 +101,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h2 class="modal-title">Select Level</h2>
-        <button id="btn-close-levels" class="icon-btn">✕</button>
+        <button id="btn-close-levels" class="icon-btn" title="Close level selection" aria-label="Close level selection">✕</button>
       </div>
       <div id="pack-container" class="pack-container"></div>
     </div>
