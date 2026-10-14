@@ -119,10 +119,18 @@
     updateProgress();
   }
 
-  function renderBoard() {
+  function renderBoard(requestedFocus = null) {
+    const activeCell = gridBoardEl.contains(document.activeElement) && document.activeElement.classList.contains('cell')
+      ? { r: Number(document.activeElement.dataset.r), c: Number(document.activeElement.dataset.c) }
+      : null;
+    let focusTarget = requestedFocus || activeCell;
+    const restoreFocus = Boolean(requestedFocus || activeCell);
     const size = engine.size;
     const violations = engine.getViolations();
     const touchingSet = new Set(violations.touchingTents.map(t => `${t.r},${t.c}`));
+    if (focusTarget && (focusTarget.r < 0 || focusTarget.r >= size || focusTarget.c < 0 || focusTarget.c >= size || engine.isTree(focusTarget.r, focusTarget.c))) {
+      focusTarget = null;
+    }
 
     // 1. Column quotas
     colQuotasEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
@@ -132,6 +140,8 @@
       div.className = 'quota-num';
       div.textContent = engine.colQuotas[c];
       const count = engine.getTentCountInCol(c);
+      div.setAttribute('role', 'img');
+      div.setAttribute('aria-label', `Column ${c + 1}: ${count} ${count === 1 ? 'tent' : 'tents'} placed; quota ${engine.colQuotas[c]}`);
       if (count === engine.colQuotas[c]) {
         div.classList.add('satisfied');
       } else if (count > engine.colQuotas[c]) {
@@ -148,6 +158,8 @@
       div.className = 'quota-num';
       div.textContent = engine.rowQuotas[r];
       const count = engine.getTentCountInRow(r);
+      div.setAttribute('role', 'img');
+      div.setAttribute('aria-label', `Row ${r + 1}: ${count} ${count === 1 ? 'tent' : 'tents'} placed; quota ${engine.rowQuotas[r]}`);
       if (count === engine.rowQuotas[r]) {
         div.classList.add('satisfied');
       } else if (count > engine.rowQuotas[r]) {
@@ -162,10 +174,12 @@
     gridBoardEl.innerHTML = '';
 
     const hintSet = new Set(hintCells.map(c => `${c.r},${c.c}`));
+    let hasTabStop = false;
 
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
-        const cell = document.createElement('div');
+        const cell = document.createElement('button');
+        cell.type = 'button';
         cell.className = 'cell';
         cell.dataset.r = r;
         cell.dataset.c = c;
@@ -175,6 +189,7 @@
         if (val === CELL_TREE) {
           cell.classList.add('tree');
           cell.textContent = '🌲';
+          cell.disabled = true;
         } else if (val === CELL_TENT) {
           cell.classList.add('tent');
           cell.textContent = '⛺';
@@ -185,6 +200,20 @@
           cell.classList.add('grass');
         }
 
+        const cellState = val === CELL_TREE
+          ? 'tree, fixed'
+          : val === CELL_TENT
+            ? (touchingSet.has(`${r},${c}`) ? 'tent, touching another tent' : 'tent')
+            : val === CELL_GRASS ? 'marked as grass' : 'empty';
+        cell.setAttribute('aria-label', `Row ${r + 1}, column ${c + 1}: ${cellState}`);
+        if (val !== CELL_TREE) {
+          const isRequestedCell = focusTarget && focusTarget.r === r && focusTarget.c === c;
+          cell.tabIndex = isRequestedCell || (!focusTarget && !hasTabStop) ? 0 : -1;
+          hasTabStop = hasTabStop || cell.tabIndex === 0;
+        } else {
+          cell.tabIndex = -1;
+        }
+
         if (hintSet.has(`${r},${c}`)) {
           cell.classList.add('hint-highlight');
         }
@@ -192,9 +221,14 @@
         gridBoardEl.appendChild(cell);
       }
     }
+
+    if (restoreFocus) {
+      const focusableCell = gridBoardEl.querySelector('.cell[tabindex="0"]');
+      if (focusableCell) focusableCell.focus({ preventScroll: true });
+    }
   }
 
-  function handleCellClick(r, c) {
+  function handleCellClick(r, c, restoreFocus = false) {
     if (engine.isTree(r, c)) return;
 
     const prevRowSat = engine.isRowSatisfied(r);
@@ -217,7 +251,7 @@
     }
 
     hintCells = [];
-    renderBoard();
+    renderBoard(restoreFocus ? { r, c } : null);
     checkVictory();
   }
 
@@ -415,13 +449,52 @@
     // Touch & Pointer Drag to Paint Grass
     gridBoardEl.addEventListener('pointerdown', (e) => {
       const cellEl = e.target.closest('.cell');
-      if (!cellEl) return;
+      if (!cellEl || cellEl.disabled) return;
       const r = parseInt(cellEl.dataset.r, 10);
       const c = parseInt(cellEl.dataset.c, 10);
       if (isNaN(r) || isNaN(c)) return;
 
       isDragging = true;
-      handleCellClick(r, c);
+      handleCellClick(r, c, true);
+    });
+
+    // Native keyboard and assistive-technology activation dispatches click without a pointer event.
+    gridBoardEl.addEventListener('click', (e) => {
+      if (e.detail !== 0) return;
+      const cellEl = e.target.closest('.cell');
+      if (!cellEl || cellEl.disabled) return;
+      handleCellClick(Number(cellEl.dataset.r), Number(cellEl.dataset.c), true);
+    });
+
+    // Keep one board cell in the Tab order and move focus with the arrow keys.
+    gridBoardEl.addEventListener('keydown', (e) => {
+      const cellEl = e.target.closest('.cell');
+      const directions = {
+        ArrowUp: [-1, 0],
+        ArrowDown: [1, 0],
+        ArrowLeft: [0, -1],
+        ArrowRight: [0, 1]
+      };
+      const direction = directions[e.key];
+      if (!cellEl || !direction) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      let r = Number(cellEl.dataset.r);
+      let c = Number(cellEl.dataset.c);
+      while (true) {
+        r += direction[0];
+        c += direction[1];
+        if (r < 0 || r >= engine.size || c < 0 || c >= engine.size) return;
+        if (engine.isTree(r, c)) continue;
+
+        const nextCell = gridBoardEl.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+        if (!nextCell) return;
+        gridBoardEl.querySelectorAll('.cell').forEach(cell => { cell.tabIndex = -1; });
+        nextCell.tabIndex = 0;
+        nextCell.focus();
+        return;
+      }
     });
 
     gridBoardEl.addEventListener('pointermove', (e) => {

@@ -59,13 +59,14 @@
       <span>One tent beside each tree. Keep the tents apart.</span>
       <span class="rule-note-tag">TAKE YOUR TIME</span>
     </div>
+    <p id="cell-instructions" class="sr-only">Use the arrow keys to move between open cells. Press Enter or Space to cycle a cell through empty, grass, tent, and empty. Trees are fixed.</p>
 
     <!-- Board Container -->
-    <main class="board-container" id="board-container" aria-label="Puzzle board with row and column tent quotas">
+    <main class="board-container" id="board-container" aria-label="Puzzle board with row and column tent quotas" aria-describedby="cell-instructions">
       <div class="corner-spacer" aria-hidden="true">✦</div>
       <div id="col-quotas" class="col-quotas"></div>
       <div id="row-quotas" class="row-quotas"></div>
-      <div id="grid-board" class="grid-board"></div>
+      <div id="grid-board" class="grid-board" role="group" aria-label="Puzzle cells"></div>
     </main>
 
     <!-- Action Controls -->
