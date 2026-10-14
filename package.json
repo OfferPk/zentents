@@ -1,0 +1,30 @@
+{
+  "name": "zentents",
+  "version": "1.0.0",
+  "description": "ZenTents: sleek, calming offline Tents and Trees forest grid logic puzzle game",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "node --test test/engine.test.js",
+    "build": "node scripts/build.js",
+    "cap:add": "cap add android",
+    "cap:sync": "cap sync android"
+  },
+  "keywords": [
+    "tents-and-trees",
+    "camping-puzzle",
+    "tents",
+    "puzzle",
+    "offline",
+    "capacitor",
+    "pwa",
+    "vanilla-js",
+    "logic-game"
+  ],
+  "author": "OfferPk",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}
