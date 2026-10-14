@@ -34,6 +34,9 @@
   const colQuotasEl = document.getElementById('col-quotas');
   const rowQuotasEl = document.getElementById('row-quotas');
   const gridBoardEl = document.getElementById('grid-board');
+  const progressCountEl = document.getElementById('progress-count');
+  const progressTrackEl = document.getElementById('progress-track');
+  const progressFillEl = document.getElementById('progress-fill');
 
   // Load progress from localStorage
   function loadProgress() {
@@ -74,6 +77,7 @@
 
   function updateSoundBtn() {
     btnSound.textContent = sounds.enabled ? '🔊' : '🔇';
+    btnSound.setAttribute('aria-pressed', String(sounds.enabled));
   }
 
   function updateAutoGrassBtn() {
@@ -82,6 +86,17 @@
     } else {
       btnAutoGrass.classList.remove('active');
     }
+    btnAutoGrass.setAttribute('aria-pressed', String(autoGrass));
+  }
+
+  function updateProgress() {
+    const total = LEVELS.length;
+    const complete = LEVELS.reduce((count, level) => count + Number(completedLevels.has(level.id)), 0);
+    const percentage = total ? (complete / total) * 100 : 0;
+    progressCountEl.textContent = `${complete} / ${total} cleared`;
+    progressFillEl.style.width = `${percentage}%`;
+    progressTrackEl.setAttribute('aria-valuemax', String(total));
+    progressTrackEl.setAttribute('aria-valuenow', String(complete));
   }
 
   function loadLevel(index) {
@@ -101,6 +116,7 @@
     btnNextLevel.disabled = index === LEVELS.length - 1;
 
     renderBoard();
+    updateProgress();
   }
 
   function renderBoard() {
@@ -219,6 +235,7 @@
       sounds.playVictory();
       completedLevels.add(LEVELS[currentLevelIndex].id);
       saveProgress();
+      updateProgress();
 
       setTimeout(() => {
         showVictoryModal();
