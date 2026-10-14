@@ -1,0 +1,18 @@
+{
+  "name": "ZenTents: Forest Logic Puzzle",
+  "short_name": "ZenTents",
+  "description": "Calm, meditative Tents and Trees forest grid logic puzzle with soothing acoustic sounds.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0c150e",
+  "theme_color": "#0c150e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
